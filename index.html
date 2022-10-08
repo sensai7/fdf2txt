@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<!--
+	Forty by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+<head>
+	<title>FDF to TXT</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+</head>
+<body class="is-preload">
+
+	<!-- Wrapper -->
+	<div id="wrapper">
+
+		<!-- Banner -->
+		<section id="banner" class="major">
+			<div class="inner">
+				<header class="major">
+					<h1>FDF to Text Converter</h1>
+				</header>
+				<div class="content">
+					<p>Turn your fdf comments into a plain text list</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="align-center">
+			<!-- <input type="file" name="inputfile" id="inputfile"> -->
+		<label class="custom-file-upload">
+		    <input type="file" id="inputfile"/>
+		    Upload
+		</label>
+			<br>
+			<p id="output"></p>
+		</section>
+
+
+		<footer id="footer" class="footerodoo">
+			<div id="copyright" class="container align-center">
+				<a href="https://sensai7.github.io/my-projects/#/" target="_blank">My other projects</a>
+				&nbsp;&nbsp;
+				Design: <a href="http://html5up.net" target="_blank">HTML5 UP</a>
+			</div>
+		</footer>
+
+	</div>
+
+	<!-- Scripts -->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.scrolly.min.js"></script>
+	<script src="assets/js/jquery.scrollex.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script>
+	<script src="assets/js/main.js"></script>
+
+	<script type="text/javascript">
+		Array.prototype.swapItems = function(a, b){
+			this[a] = this.splice(b, 1, this[a])[0];
+			return this;
+		}
+
+		function saveTextAsFile(text, filename){
+			var textToSave = text;
+			var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+			var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+			var downloadLink = document.createElement("a");
+
+            //console.log(filename);
+            downloadLink.download = filename + ".txt";
+            downloadLink.innerHTML = "Download File";
+            downloadLink.href = textToSaveAsURL;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+
+            downloadLink.click();
+        }
+
+
+        document.getElementById('inputfile').addEventListener('change', function() {
+        	var fr = new FileReader();
+        	fr.onload=function(){
+
+        		var originalText = fr.result;
+                //console.log(originalText);
+                const regexp = /(\/Page.*)|(\/Contents.*)/g;
+                const matchesArray = [...originalText.matchAll(regexp)];
+                var articleList = [];
+                for (var i = 0; i < matchesArray.length; i++) { 
+                	var currentArticle = matchesArray[i][0];
+                	if (currentArticle.startsWith("/Page")){
+                		articleList.push(currentArticle.substring(1)); 
+                	}
+                	else if(currentArticle.startsWith("/Contents")){
+                		articleList.push(currentArticle.substring(11, currentArticle.length-1)); 
+                	}
+                }
+                //console.log(fr);
+
+                var articleListNew = [];
+                var lastPage = -1
+
+                for (var i = 0; i < articleList.length; i++) { 
+                	var element = articleList[i];
+                	if (element.length > 5){
+                		if (element.startsWith("Page")){
+                			x = element.split(" ");
+                			if (lastPage < parseInt(x[1])){
+                				articleListNew.push("Page " + (1+ parseInt(x[1])) );
+                				lastPage = parseInt(x[1]);
+                			}
+                		}else{
+                			articleListNew.push(element);
+                		}
+                	}else{
+                		articleListNew.push(element);
+                	}
+                }
+
+                for (var i = 0; i < articleListNew.length; i++) { 
+                	if (articleListNew[i].length > 5){
+                		if (articleListNew[i].startsWith("Page")){
+                			articleListNew.swapItems(i, i-1);
+                		}
+                	}
+                }
+
+                block = articleListNew.join("\n");
+                block = block.replaceAll("\nPage", "\n\nPage");
+                block = block.replaceAll("\\r", " ");
+
+				var filePath = document.getElementById('inputfile').value;
+				var filename = filePath.replace(/^.*[\\\/]/, '');
+				var filename = filename.replace(/\.[^/.]+$/, "")
+
+                //console.log(block);
+                //document.getElementById('output').textContent = block;
+                document.getElementById('output').textContent = filename + ".txt saved in your download directory";
+                saveTextAsFile(block, filename);
+            }
+
+            fr.readAsText(this.files[0]);
+        })
+    </script>
+
+</body>
+</html>
