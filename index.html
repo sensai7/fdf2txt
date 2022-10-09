@@ -24,7 +24,8 @@
 					<h1>FDF to Text Converter</h1>
 				</header>
 				<div class="content">
-					<p>Turn your fdf comments into a plain text list</p>
+					<p>Turn your fdf comments into a plain text list<br>
+					No data is being uploaded or stored</p>
 				</div>
 			</div>
 		</section>
@@ -136,12 +137,17 @@
 
 				var filePath = document.getElementById('inputfile').value;
 				var filename = filePath.replace(/^.*[\\\/]/, '');
-				var filename = filename.replace(/\.[^/.]+$/, "")
+				var filenameSansExt = filename.replace(/\.[^/.]+$/, "")
 
                 //console.log(block);
                 //document.getElementById('output').textContent = block;
-                document.getElementById('output').textContent = filename + ".txt saved in your download directory";
-                saveTextAsFile(block, filename);
+                if (block){
+                	document.getElementById('output').textContent = filenameSansExt + ".txt saved in your download directory";
+                	saveTextAsFile(block, filenameSansExt);
+                }else{
+                	document.getElementById('output').textContent = filename + " is not a valid file";
+                }
+
             }
 
             fr.readAsText(this.files[0]);
